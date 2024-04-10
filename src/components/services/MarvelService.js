@@ -1,34 +1,28 @@
-class MarvelService {
-    _apiBase = 'https://gateway.marvel.com:443/v1/public/';
-    _appKey = 'apikey=' + process.env.REACT_APP_API_MARVEL_DB;
-    _baseOffset = 210;
+import { useHttp } from "../../hooks/http.hook";
 
-    getResource = async (url) => {
-        const res = await fetch(url);
+const useMarvelService = () => {
+    const { loading, request, error, clearError } = useHttp();
 
-        if (!res.ok) {
-            throw new Error(`Could not fetch ${url}, status: ${res.status}`);
-        }
+    const _apiBase = 'https://gateway.marvel.com:443/v1/public/';
+    const _appKey = 'apikey=' + process.env.REACT_APP_API_MARVEL_DB;
+    const _baseOffset = 210;
 
-        return await res.json();
+    const getAllCharacters = async (offset = _baseOffset) => {
+        const res = await request(`${_apiBase}characters?limit=9&offset=${offset}&${_appKey}`);
+        return res.data.results.map(_transformCharacter);
     }
 
-    getAllCharacters = async (offset = this._baseOffset) => {
-        const res = await this.getResource(`${this._apiBase}characters?limit=9&offset=${offset}&${this._appKey}`);
-        return res.data.results.map(this._transformCharacter);
+    const getCharacter = async (id) => {
+        const res = await request(`${_apiBase}characters/${id}?${_appKey}`);
+        return _transformCharacter(res.data.results[0]);
     }
 
-    getCharacter = async (id) => {
-        const res = await this.getResource(`${this._apiBase}characters/${id}?${this._appKey}`);
-        return this._transformCharacter(res.data.results[0]);
-    }
-
-    getTotalCharacters = async (offset = this._baseOffset) => {
-        const res = await this.getResource(`${this._apiBase}characters?limit=1&offset=1&${this._appKey}`);
+    const getTotalCharacters = async (offset = _baseOffset) => {
+        const res = await request(`${_apiBase}characters?limit=1&offset=1&${_appKey}`);
         return res.data.total;
     }
 
-    _transformCharacter = (char) => {
+    const _transformCharacter = (char) => {
         let thumbnailStyles = {
             objectFit: "cover"
         },
@@ -49,6 +43,8 @@ class MarvelService {
             comics: char.comics.items
         }
     }
+
+    return { loading, error, getAllCharacters, getCharacter, clearError }
 }
 
-export default MarvelService;
+export default useMarvelService;
