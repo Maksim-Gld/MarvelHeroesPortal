@@ -22,8 +22,15 @@
             line-height: 32px;
             li {
                 margin: 0 8px;
-                a:hover {
-                    color: $main-color;
+                a {
+                    &.active_tab {
+                        color: $main-color;
+                        text-decoration: underline;
+                    }
+
+                    &:hover {
+                        color: $main-color;
+                    }
                 }
             }
         }
